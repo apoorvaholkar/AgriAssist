@@ -1,0 +1,45 @@
+/* styles.css */
+
+/* Style for the bank cards */
+.card {
+    background-color: #cbd5e1; /* Light greyish-blue */
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    margin: 10px;
+  }
+  
+  .card img {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 20px;
+  }
+  
+  .card h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  .card p {
+    color: #4b5563; /* Text color */
+    margin-bottom: 20px;
+  }
+  
+  .card button {
+    background-color: #16a34a; /* Green button */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .card button:hover {
+    background-color: #15803d; /* Darker green on hover */
+  }
+  
