@@ -71,7 +71,7 @@ const AdminMainPanel = () => {
 
   const openViewPopup = async (aadharNumber) => {
     try {
-      const response = await axios.get('http://localhost:5000/admin/view-application/${aadharNumber}');
+      const response = await axios.get(`http://localhost:5000/admin/view-application/${aadharNumber}`);
       if (response.status === 200) {
         setViewApplication(response.data.data);
         setShowViewPopup(true);
@@ -153,7 +153,9 @@ const AdminMainPanel = () => {
                       >
                         View Application
                       </button>
+                     
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -194,25 +196,32 @@ const AdminMainPanel = () => {
         )}
     
         {/* View Popup */}
+       {/* View Popup */}
+        {/* View Popup */}
         {showViewPopup && viewApplication && (
-          <div className="popup">
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
             <div className="popup-content">
               <h3>Application Details</h3>
               <ul>
                 {Object.entries(viewApplication).map(([key, value]) => (
                   <li key={key}>
-                    <strong>{key}:</strong> {value}
+                    <strong>{key.replace(/([A-Z])/g, " $1")}:</strong> {value}
                   </li>
                 ))}
               </ul>
-              <div className="flex justify-end">
-                <button className="button" onClick={closeViewPopup}>
+              <div className="flex justify-end mt-4">
+                <button
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                  onClick={closeViewPopup}
+                >
                   Close
                 </button>
               </div>
             </div>
           </div>
         )}
+
+
       </div>
     
   );

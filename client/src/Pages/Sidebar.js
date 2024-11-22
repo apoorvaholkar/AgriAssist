@@ -2,7 +2,7 @@ import React, { useState } from "react";
 // import { Icon } from '@iconify/react';
 import GridViewIcon from '@mui/icons-material/GridView';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faCloud, faNewspaper, faWarehouse, faSeedling, faFlask, faStore, faIndianRupee, faAreaChart, faArrowTrendUp, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import {faCloud, faNewspaper, faWarehouse, faSeedling, faFlask, faStore, faIndianRupee, faAreaChart, faArrowTrendUp, faCheckCircle, faLeaf } from '@fortawesome/free-solid-svg-icons';
 import DONATE from '../Assets/donate.jpg';
 import { useNavigate } from 'react-router-dom'; 
 import { MdLogout } from "react-icons/md";
@@ -56,6 +56,10 @@ function Sidebar({ activeSection, handleSectionChange }) {
                     <FontAwesomeIcon icon={faAreaChart} className="icon" />
                     <span>Land Mapping</span>
                 </li>
+                <li className={activeSection === 'vegetationdetails' ? 'active' : ''} onClick={() => handleSectionChange('vegetationdetails')}>
+                    <FontAwesomeIcon icon={faLeaf} className="icon" />
+                    <span>Vegetation Details</span>
+                </li>
                 <li className={activeSection === 'loan' ? 'active' : ''} onClick={() => handleSectionChange('loan')}>
                     <FontAwesomeIcon icon={faArrowTrendUp} className="icon" />
                     <span>Credit Score Form Submission</span>
@@ -64,10 +68,7 @@ function Sidebar({ activeSection, handleSectionChange }) {
                     <FontAwesomeIcon icon={faIndianRupee} className="icon" />
                     <span>Loan Application</span>
                 </li>
-                <li className={activeSection === 'adminpanel' ? 'active' : ''} onClick={() => handleSectionChange('adminpanel')}>
-                    <FontAwesomeIcon icon={faCheckCircle} className="icon" />
-                    <span>Loan Status</span>
-                </li>
+                
             </ul>
             {/* <hr className="divider1" /> */}
             <div>

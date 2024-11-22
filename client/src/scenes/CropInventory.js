@@ -130,7 +130,7 @@ const CropInventory = () => {
                 </>
               )}
             </div>
-            <img src={imageMap[crop.cropsThumb]} alt={crop.cropsName} className="crop-thumb" />
+            <img src={crop.cropsThumb} alt={crop.cropsName} className="crop-thumb" />
           </div>
         ))}
       </div>

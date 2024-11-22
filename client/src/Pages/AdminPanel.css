@@ -10,7 +10,7 @@
     padding: 2rem;
     background: var(--background-color);
     min-height: 100vh;
-    margin-left: 18rem; /* Adjust for sidebar alignment */
+    margin-left: 24rem; /* Adjust for sidebar alignment */
   }
   
   .admin-panel-title {

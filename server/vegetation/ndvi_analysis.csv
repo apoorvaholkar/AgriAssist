@@ -1,12 +1,12 @@
 interval,mean_ndvi,ndvi_score,ndvi_trend
-2023-01-01T00:00:00Z,0.7519951167502201,very good vegetation,N/A
-2023-02-01T00:00:00Z,0.4380085462679588,medium vegetation,Decreased
-2023-03-01T00:00:00Z,0.22693470357472953,low to average vegetation,Decreased
-2023-04-01T00:00:00Z,0.16698231364068633,low to average vegetation,Decreased
-2023-05-01T00:00:00Z,0.35919764896689044,medium vegetation,Increased
-2023-06-01T00:00:00Z,0.04006420849366067,low to average vegetation,Decreased
-2023-07-01T00:00:00Z,0.011178365909527562,low to average vegetation,Decreased
-2023-08-01T00:00:00Z,0.4211538477100363,medium vegetation,Increased
-2023-09-01T00:00:00Z,0.23515291278575512,low to average vegetation,Decreased
-2023-10-01T00:00:00Z,0.8046494746851283,very good vegetation,Increased
-2023-11-01T00:00:00Z,0.35186420267144997,medium vegetation,Decreased
+2023-01-01T00:00:00Z,0.16774040176349422,low to average vegetation,N/A
+2023-02-01T00:00:00Z,0.15769266013619995,low to average vegetation,Decreased
+2023-03-01T00:00:00Z,0.14514463172381162,low to average vegetation,Decreased
+2023-04-01T00:00:00Z,-0.012192192616678879,low to average vegetation,Decreased
+2023-05-01T00:00:00Z,0.14137323949403385,low to average vegetation,Increased
+2023-06-01T00:00:00Z,0.05043366218645255,low to average vegetation,Decreased
+2023-07-01T00:00:00Z,0.019163032285243544,low to average vegetation,Decreased
+2023-08-01T00:00:00Z,0.3867941164103804,medium vegetation,Increased
+2023-09-01T00:00:00Z,0.25914445935527597,low to average vegetation,Decreased
+2023-10-01T00:00:00Z,0.30118775382620927,medium vegetation,Increased
+2023-11-01T00:00:00Z,-0.06727299237564774,low to average vegetation,Decreased

@@ -635,6 +635,24 @@ def get_analysis_report():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/admin/view-application/<aadhar_number>', methods=['GET'])
+@cross_origin()
+def view_application(aadhar_number):
+    try:
+        if os.path.exists(LOAN_APPLICATION_FILE):
+            with open(LOAN_APPLICATION_FILE, 'r') as file:
+                loan_data = json.load(file)
+        else:
+            return jsonify({"message": "Loan application file not found."}), 404
+
+        application = next((entry for entry in loan_data if entry.get('aadharNumber') == aadhar_number), None)
+        if application:
+            return jsonify({"data": application}), 200
+        else:
+            return jsonify({"message": "Application not found."}), 404
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
 
 
 if __name__ == '__main__':
