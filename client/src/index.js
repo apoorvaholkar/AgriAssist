@@ -10,6 +10,7 @@ import User from "./User/TermsAndConditions";
 import Box from './CommunityForm/Box';
 import Faqs from "./Faqs/Faqs";
 import Thank from "./Market/thankyou";
+import AdminMainPanel from "./Pages/AdminMainPanel";
 const NoPage = lazy(() => import("./Pages/NoPage"));
 
 const RoutesComponent = () => {
@@ -25,6 +26,7 @@ const RoutesComponent = () => {
       <Route path="/dashboard/faqs" element={<Faqs/>}/>
       <Route path="/dashboard/checkout" element ={<Thank/>}/>
       <Route path="*" element={<NoPage />} />
+      <Route path="/admin" element={<AdminMainPanel />} />
     </Routes>
   );
 };

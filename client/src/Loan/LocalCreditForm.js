@@ -18,7 +18,7 @@ const LocalCreditForm = ({ onBack }) => {
     cropTypes: "",
     averageYield: "",
   });
-
+ 
   const [formStatus, setFormStatus] = useState(""); // For status feedback
 
   // Handle form input changes
@@ -36,8 +36,14 @@ const LocalCreditForm = ({ onBack }) => {
 
     try {
       // Send form data to the backend
-      const response = await axios.post("http://localhost:8081/api/local-credit-score", formData);
-
+      const response = await fetch("http://localhost:5000/local", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      console.log("Response:", response);
       if (response.status === 200) {
         setFormStatus("Form submitted successfully!");
         setFormData({
@@ -55,11 +61,13 @@ const LocalCreditForm = ({ onBack }) => {
           averageYield: "",
         }); // Clear form
       } else {
-        setFormStatus("Failed to submit form. Please try again.");
+        // setFormStatus("Failed to submit form. Please try again.");
+        alert("Error submitting data. Please try again later.");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      setFormStatus("An error occurred while submitting the form.");
+      // setFormStatus("An error occurred while submitting the form.");
+      alert("Error submitting data. Please try again later.");
     }
   };
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-// import MarketData from './MarketData'; 
-import {getAllMarketdata} from './../backendservice'
-import './Market.css'; 
+import { getAllMarketdata } from './../backendservice';
+import './Market.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import PulseLoader from 'react-spinners/PulseLoader';
 import Cart from './Cart';
 import tractor from '../Pictures/1.webp';
 import harvester from '../Pictures/2.jpeg';
@@ -31,51 +31,51 @@ import heavyDutyRotavator1 from '../Pictures/23.webp';
 import selfPropelledHarvester1 from '../Pictures/24.webp';
 
 const imageMap = {
-  tractor: tractor,
-  harvester: harvester,
-  plough: plough,
-  seeder: seeder,
-  spreader: spreader,
-  rotavator: rotavator,
-  trailer: trailer,
-  combine: combine,
-  sprayer: sprayer,
-  seederFertilizer: seederFertilizer,
-  mower: mower,
-  tiller: tiller,
-  baler: baler,
-  cultivator: cultivator,
-  boomSprayer: boomSprayer,
-  rowSeeder: rowSeeder,
-  flatbedTrailer: flatbedTrailer,
-  manureSpreader: manureSpreader,
-  heavyDutyRotavator: heavyDutyRotavator,
-  selfPropelledHarvester: selfPropelledHarvester,
-  flatbedTrailer1: flatbedTrailer1,
-  manureSpreader1: manureSpreader1,
-  heavyDutyRotavator1: heavyDutyRotavator1,
-  selfPropelledHarvester1: selfPropelledHarvester1,
+  tractor,
+  harvester,
+  plough,
+  seeder,
+  spreader,
+  rotavator,
+  trailer,
+  combine,
+  sprayer,
+  seederFertilizer,
+  mower,
+  tiller,
+  baler,
+  cultivator,
+  boomSprayer,
+  rowSeeder,
+  flatbedTrailer,
+  manureSpreader,
+  heavyDutyRotavator,
+  selfPropelledHarvester,
+  flatbedTrailer1,
+  manureSpreader1,
+  heavyDutyRotavator1,
+  selfPropelledHarvester1,
 };
 
-
-
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 12;
 
 const Market = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [marketData, setMarketData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      setCurrentPage(prevPage => prevPage + 1);
     }
   };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      setCurrentPage(prevPage => prevPage - 1);
     }
   };
 
@@ -101,29 +101,27 @@ const Market = () => {
       item.id === itemId ? { ...item, quantity: item.quantity > 1 ? item.quantity - 1 : 1 } : item
     ));
   };
-  
+
   const handleRemoveFromCart = (itemId) => {
     setCart(cart.filter(item => item.id !== itemId));
   };
-
-  const [MarketData, setMarketData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getAllMarketdata();
         setMarketData(data);
-        console.log(data)
+        console.log(data);
       } catch (error) {
         console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false); // End loading
       }
     };
-
     fetchData();
   }, []);
 
-
-  const filteredItems = MarketData.filter(item =>
+  const filteredItems = marketData.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -141,16 +139,16 @@ const Market = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <div style={{marginLeft:'440px',marginTop:'-40px'}}>
-        <FontAwesomeIcon icon={faSearch} className="search-icon" />
+        <div style={{ marginLeft: '440px', marginTop: '-40px' }}>
+          <FontAwesomeIcon icon={faSearch} className="search-icon" />
         </div>
       </div>
- 
+
       <div className="cart-icon" onClick={() => setCartOpen(!cartOpen)}>
-          <FontAwesomeIcon icon={faShoppingCart} />
-          <span className="cart-count">{cart.length}</span>
+        <FontAwesomeIcon icon={faShoppingCart} />
+        <span className="cart-count">{cart.length}</span>
       </div>
-        
+
       {cartOpen && cart.length > 0 && (
         <Cart 
           cartItems={cart} 
@@ -163,7 +161,7 @@ const Market = () => {
       <div className="market-item-grid">
         {currentPageItems.map(item => (
           <div key={item.id} className="market-item">
-            <img src={imageMap[item.image]} alt={item.name} />
+            <img src={item.image} alt={item.name} />
             <div className='item-price-section'>
               <div>
                 <h3 className='item-name'>{item.name}</h3>
@@ -182,7 +180,7 @@ const Market = () => {
         <button className='page-button' onClick={handlePreviousPage} disabled={currentPage === 1}>
           Previous
         </button>
-        <span  style={{marginTop:'5px',marginLeft:'160px'}}>
+        <span style={{ marginTop: '5px', marginLeft: '160px' }}>
           Page {currentPage} of {totalPages}
         </span>
         <button className='page-button1' onClick={handleNextPage} disabled={currentPage === totalPages}>
@@ -194,4 +192,3 @@ const Market = () => {
 };
 
 export default Market;
-

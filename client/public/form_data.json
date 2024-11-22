@@ -1,0 +1,18 @@
+[
+    {
+        "fullName": "Priyanka Kurotsuchi",
+        "aadharNumber": "123456789",
+        "contactNumber": "123456789",
+        "address": "abc",
+        "village": "Haveli",
+        "landArea": "5",
+        "ownershipType": "owned",
+        "landUse": "agriculture",
+        "soilType": "Loamy",
+        "irrigation": "yes",
+        "cropTypes": "Sugarcane",
+        "averageYield": "50000",
+        "local_credit_score": 57,
+        "timestamp": "2024-11-22T08:46:18.343470"
+    }
+]

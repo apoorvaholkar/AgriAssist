@@ -4,7 +4,7 @@ import "./Loan.css";
 
 const GlobalCreditForm = ({ onBack }) => {
   const [formData, setFormData] = useState({
-    aadhar: "",
+    aadharNumber: "",
     numVehicles: "",
     numCattle: "",
     numWells: "",
@@ -52,8 +52,9 @@ const GlobalCreditForm = ({ onBack }) => {
 
     try {
       // API call to store the data
+
       const response = await axios.post(
-        "http://localhost:8081/api/global-credit-score",
+        "http://localhost:5000/global",
         formData
       );
 
@@ -62,7 +63,7 @@ const GlobalCreditForm = ({ onBack }) => {
         alert("Data submitted successfully!");
         // Optionally, reset form or navigate
         setFormData({
-          aadhar: "",
+          aadharNumber: "",
           numVehicles: "",
           numCattle: "",
           numWells: "",
@@ -94,14 +95,14 @@ const GlobalCreditForm = ({ onBack }) => {
         <form onSubmit={handleSubmit}>
           {/* Aadhar Number */}
           <div className="form-group">
-            <label htmlFor="aadhar" className="block mb-1">
+            <label htmlFor="aadharNumber" className="block mb-1">
               Aadhar Number
             </label>
             <input
               type="text"
-              id="aadhar"
-              name="aadhar"
-              value={formData.aadhar}
+              id="aadharNumber"
+              name="aadharNumber"
+              value={formData.aadharNumber}
               onChange={handleInputChange}
               required
               className="w-full px-3 py-2 border rounded-md"
@@ -318,13 +319,13 @@ const GlobalCreditForm = ({ onBack }) => {
           {/* Error Handling */}
           {error && <div className="error">{error}</div>}
 
-          {/* Submit Button */}
-          <button type="submit" className="submit-btn">
-            Submit
-          </button>
         </form>
       </div>
-      <button onClick={onBack} className="back-btn">
+      {/* Submit Button */}
+      <button type="submit" className="btn">
+        Submit
+      </button>
+      <button onClick={onBack} className="btn back-btn">
         Go Back
       </button>
     </div>

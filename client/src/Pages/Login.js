@@ -43,6 +43,12 @@ function Login() {
   }
 
   const handleLogin = async () => {
+
+    if (email === "admin" && password === "admin") {
+      navigate("/admin"); // Redirect to AdminPanel if credentials match
+      return;
+    }
+
     const isEmailValid = emailValid(email);
     const isPasswordValid = passwordValid(password);
 

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, render_template, send_file
+from flask import Flask, request, jsonify, render_template, send_file
 from flask import request as req
 from flask_cors import CORS
 from flask_cors import cross_origin
@@ -12,9 +12,17 @@ import pandas as pd
 import os
 from werkzeug.utils import secure_filename
 
+import random
 app = Flask(__name__)
-CORS(app, origins="http://localhost:3000")   # Enable CORS for all routes
+CORS(app)   # Enable CORS for all routes
 
+
+GLOBAL_DATA_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/global_data.json"
+FORM_DATA_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/form_data.json"
+LOAN_APPLICATION_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/loan_data.json"
+
+
+# Configuration for Sentinel Hub
 # Your existing configuration and variables here
 config = SHConfig()
 config.sh_client_id = 'db0acfc2-e952-484e-8ee3-5eb450a32a56'
@@ -74,6 +82,217 @@ function evaluatePixel(samples) {
     }
 }
 """
+
+# Local Credit Form Data
+@app.route('/local', methods=['POST'])
+@cross_origin()
+def save_form_data():
+    try:
+        # Get JSON data from the request
+        form_data = req.get_json()
+        
+        form_data['local_credit_score'] = random.randint(50, 100)
+        # Add a timestamp to the form data
+        form_data['timestamp'] = datetime.now().isoformat()
+
+        # Check if the file exists
+        DATA_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/form_data.json"
+        if os.path.exists(DATA_FILE):
+            # If the file exists, append the new data
+            with open(DATA_FILE, 'r') as file:
+                existing_data = json.load(file)
+        else:
+            # If the file does not exist, initialize an empty list
+            existing_data = []
+
+        # Append the new form data
+        existing_data.append(form_data)
+
+        # Save the updated data back to the file
+        with open(DATA_FILE, 'w') as file:
+            json.dump(existing_data, file, indent=4)
+
+        return jsonify({"message": "Form data saved successfully!"}), 200
+
+    except Exception as e:
+        print("Error saving form data:", e)
+        return jsonify({"message": "Failed to save form data", "error": str(e)}), 500
+
+
+
+
+#Global Credit Form Data
+@app.route('/global', methods=['POST'])
+@cross_origin()
+def save_global_data():
+    try:
+        # Get JSON data from the request
+        global_data = req.get_json()
+        global_data['global_credit_score'] = random.randint(50, 100)
+        # Add a timestamp to the global data
+        global_data['timestamp'] = datetime.now().isoformat()
+
+        # Check if the file exists
+        DATA_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/global_data.json"
+        if os.path.exists(DATA_FILE):
+            # If the file exists, append the new data
+            with open(DATA_FILE, 'r') as file:
+                existing_data = json.load(file)
+        else:
+            # If the file does not exist, initialize an empty list
+            existing_data = []
+
+        # Append the new global data
+        existing_data.append(global_data)
+
+        # Save the updated data back to the file
+        with open(DATA_FILE, 'w') as file:
+            json.dump(existing_data, file, indent=4)
+
+        return jsonify({"message": "Global data saved successfully!"}), 200
+
+    except Exception as e:
+        print("Error saving global data:", e)
+        return jsonify({"message": "Failed to save global data", "error": str(e)}), 500
+
+
+
+#Loan Application
+@app.route('/submit-loan', methods=['POST'])
+@cross_origin()
+def submit_loan_application():
+    try:
+        # Get the form data from the request
+        form_data = req.get_json()
+        aadhar_number = form_data.get('aadharNumber')
+
+        # Validate Aadhar number is provided
+        if not aadhar_number:
+            return jsonify({"message": "Aadhar number is required."}), 400
+
+        # Load data from both files
+        if os.path.exists(GLOBAL_DATA_FILE):
+            with open(GLOBAL_DATA_FILE, 'r') as file:
+                global_data = json.load(file)
+        else:
+            global_data = []
+
+        if os.path.exists(FORM_DATA_FILE):
+            with open(FORM_DATA_FILE, 'r') as file:
+                form_data_list = json.load(file)
+        else:
+            form_data_list = []
+
+        # Search for matching Aadhar number in both files
+        global_entry = next((entry for entry in global_data if entry.get('aadharNumber') == aadhar_number), None)
+        form_entry = next((entry for entry in form_data_list if entry.get('aadharNumber') == aadhar_number), None)
+
+        if not global_entry and not form_entry:
+            return jsonify({"message": "Aadhar number not found in both files."}), 404
+        elif not global_entry:
+            return jsonify({"message": "Aadhar number not found in global_data.json."}), 404
+        elif not form_entry:
+            return jsonify({"message": "Aadhar number not found in form_data.json."}), 404
+
+         # Extract specific fields from form_data
+        bank_name = form_data.get('bankName')
+        loan_amount = form_data.get('loanAmount')
+        repayment_months = form_data.get('repaymentMonths')
+
+        # Merge data from both entries and include selected form_data fields
+        merged_data = {
+            **global_entry,
+            **form_entry,
+            "bankName": bank_name,          # Add bankName from form_data
+            "loanAmount": loan_amount,      # Add loanAmount from form_data
+            "repaymentMonths": repayment_months, # Add repaymentMonths from form_data
+            "loanStatus": "Pending"        # Add loan_status field
+        }
+
+        # Save the merged data to the loan_application.json file
+        if os.path.exists(LOAN_APPLICATION_FILE):
+            with open(LOAN_APPLICATION_FILE, 'r') as file:
+                loan_data = json.load(file)
+        else:
+            loan_data = []
+
+        # Append the merged entry
+        loan_data.append(merged_data)
+
+        with open(LOAN_APPLICATION_FILE, 'w') as file:
+            json.dump(loan_data, file, indent=4)
+
+        return jsonify({"message": "Loan application submitted successfully.", "data": merged_data}), 200
+
+    except Exception as e:
+        print("Error processing loan application:", e)
+        return jsonify({"message": "An error occurred.", "error": str(e)}), 500
+
+
+# Get the latest loan applications
+@app.route('/admin/loan-applications', methods=['GET'])
+def get_latest_loan_applications():
+    try:
+        if os.path.exists(LOAN_APPLICATION_FILE):
+            with open(LOAN_APPLICATION_FILE, 'r') as file:
+                loan_data = json.load(file)
+        else:
+            loan_data = []
+
+        # Filter the latest entry for each Aadhar number
+        unique_entries = {}
+        for entry in loan_data:
+            aadhar = entry.get('aadharNumber')
+            if aadhar:
+                if aadhar not in unique_entries or unique_entries[aadhar]['timestamp'] < entry.get('timestamp', 0):
+                    unique_entries[aadhar] = entry
+
+        return jsonify({"message": "Loan applications retrieved successfully.", "data": list(unique_entries.values())}), 200
+
+    except Exception as e:
+        print("Error retrieving loan applications:", e)
+        return jsonify({"message": "An error occurred.", "error": str(e)}), 500
+    
+
+@app.route('/admin/update-loan-status', methods=['POST'])
+def update_loan_status():
+    try:
+        data = request.get_json()
+        aadhar_number = data.get('aadharNumber')
+        status = data.get('status')
+        review_message = data.get('reviewMessage', "")
+
+        if not aadhar_number or not status:
+            return jsonify({"message": "Aadhar number and status are required."}), 400
+
+        if os.path.exists(LOAN_APPLICATION_FILE):
+            with open(LOAN_APPLICATION_FILE, 'r') as file:
+                loan_data = json.load(file)
+        else:
+            return jsonify({"message": "Loan application file not found."}), 404
+
+        for application in loan_data:
+            if application.get('aadharNumber') == aadhar_number:
+                application['loanStatus'] = status
+                if status == "Reverted":
+                    application['reviewMessage'] = review_message
+                break
+        else:
+            return jsonify({"message": "Loan application not found."}), 404
+
+        with open(LOAN_APPLICATION_FILE, 'w') as file:
+            json.dump(loan_data, file, indent=4)
+
+        return jsonify({"message": f"Loan status updated to {status} successfully."}), 200
+
+    except Exception as e:
+        print("Error updating loan status:", e)
+        return jsonify({"message": "An error occurred.", "error": str(e)}), 500
+
+
+
+
+# Function to generate NDVI graph
 def generate_ndvi_graph(response_data):
     """Generate NDVI graph from response data and save it as PNG"""
     date = []
@@ -386,7 +605,7 @@ def get_712():
     })
 
 # Path to your image file
-ndvi_image_path = r".C:\Users\welcome\Desktop\Bhoomi-main\Bhoomi-main\server\vegetation\static\ndvi_plot.png"
+ndvi_image_path = r".C:\Users\Apoorva\Documents\VIT\Major Project\Bhoomi\Bhoomi-main\server\vegetation\static\ndvi_plot.png"
 
 @app.route('/ndvi-image')
 def get_ndvi_image():
@@ -416,7 +635,7 @@ def get_analysis_report():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-CORS(app, resources={r"/analysis-report": {"origins": "http://localhost:3000"}})
+
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port=5000, debug=True)

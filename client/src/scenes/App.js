@@ -13,7 +13,6 @@ const App = () => {
                     <Routes>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/climate" element={<Climate />} /> 
-                        
                     </Routes>
                 </div>
             </div>

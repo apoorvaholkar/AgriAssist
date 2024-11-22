@@ -20,6 +20,7 @@ import frontImage from '../Assets/front.png';
 import Loan from '../Loan/Loan';
 import MapComponent from '../ndvi/MapComponent';
 import LoanStatus from '../LoanStatus/LoanStatus';
+import AdminPanel from './AdminPanel';
 const TempChart = lazy(() => import('./TempChart'));
 const CropInventory = lazy(() => import('../scenes/CropInventory'));
 const CropRecommendations = lazy(() => import('../scenes/CropRecommendations'));
@@ -140,6 +141,7 @@ const Dashboard = () => {
                   {activeSection === 'loan' && <Loan />}
                   {activeSection === 'mapcomponent' && <MapComponent />}
                   {activeSection === 'loanstatus' && <LoanStatus />}
+                  {activeSection === 'adminpanel' && <AdminPanel />}
                 </Suspense>
                 
               </div>

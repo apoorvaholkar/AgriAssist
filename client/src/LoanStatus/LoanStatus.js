@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBank  } from '@fortawesome/free-solid-svg-icons';
 import './LoanStatus.css';
+
+import hdfcicon from './hdfc.png';
+import iciciicon from './icici.png';
+import axisicon from './axis.png';
+import sbiicon from './sbi.jpg';
+import kotakicon from './kotak.png';
+import barodaicon from './baroda.png';
 
 const LoanStatus = () => {
   const [showForm, setShowForm] = useState(false);
@@ -9,14 +14,13 @@ const LoanStatus = () => {
   const [loanAmount, setLoanAmount] = useState("");
   const [repaymentMonths, setRepaymentMonths] = useState("");
 
-
   const banks = [
-    { id: 1, name: "Bank A", image: "", interestRate: "7.5%" },
-    { id: 2, name: "Bank B", image: "/bank.jpg", interestRate: "8.2%" },
-    { id: 3, name: "Bank C", image: "path/to/imageC", interestRate: "6.9%" },
-    { id: 4, name: "Bank D", image: "path/to/imageD", interestRate: "7.0%" },
-    { id: 5, name: "Bank E", image: "path/to/imageE", interestRate: "8.0%" },
-    { id: 6, name: "Bank F", image: "path/to/imageF", interestRate: "7.3%" },
+    { id: 1, name: "HDFC", image: hdfcicon, interestRate: "7.5%" },
+    { id: 2, name: "ICICI", image: iciciicon, interestRate: "8.2%" },
+    { id: 3, name: "SBI", image: sbiicon, interestRate: "6.9%" },
+    { id: 4, name: "Axis", image: axisicon, interestRate: "7.0%" },
+    { id: 5, name: "Kotak Mahindra", image: kotakicon, interestRate: "8.0%" },
+    { id: 6, name: "Baroda", image: barodaicon, interestRate: "7.3%" },
   ];
 
   const handleApplyClick = (bank) => {
@@ -26,24 +30,22 @@ const LoanStatus = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add form submission logic here
     console.log({ selectedBank, loanAmount, repaymentMonths });
   };
 
   return (
-    <div className="ml-96"> {/* Doubled the margin to ml-32 */}
-      <h2 className="text-2xl font-bold mb-6">Loan Status</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="ml-96">
+      <h1 className="text-2xl font-bold mb-6" style={{marginLeft:'150px'}}>Loan Application</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" style={{marginLeft:'125px'}}>
         {banks.map((bank) => (
-          <div
-            key={bank.id}
-            className="border rounded-lg shadow-lg p-6 flex flex-col items-center w-80 bg-slate-50 transition-colors duration-300"
-          >
-            <img src={bank.image} alt={bank.name} className="w-24 h-24 mb-4" />
-            <h2 className="text-lg font-semibold mb-2">{bank.name}</h2>
-            <p className="text-gray-600 mb-4">Rate of Interest: {bank.interestRate}</p>
+          <div key={bank.id} className="bank-card">
+            <div className="bankimage-container">
+              <img src={bank.image} alt={bank.name} className="bank-image" />
+            </div>
+            <h2 className="text-lg font-semibold mb-2 mt-16">{bank.name}</h2>
+            <p className="text-gray-600 mb-4 text-center">Rate of Interest: {bank.interestRate}</p>
             <button
-              className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
+              className="gradient-button"
               onClick={() => handleApplyClick(bank)}
             >
               Apply
@@ -52,8 +54,8 @@ const LoanStatus = () => {
         ))}
       </div>
 
-      {/* Popup Form */}
-      {showForm && (
+       {/* Popup Form */}
+       {showForm && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-6 shadow-lg rounded-lg max-w-md w-full">
             <h3 className="text-xl font-semibold mb-4">Loan Application Form</h3>

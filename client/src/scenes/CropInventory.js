@@ -81,6 +81,8 @@ const CropInventory = () => {
         console.log(data)
       } catch (error) {
         console.error('Error fetching data:', error);
+        console.log(cropsData);
+
       }
     };
 
@@ -90,7 +92,7 @@ const CropInventory = () => {
     <div>
       <div className="crpcontainer">
         {cropsData.map((crop, index) => (
-          <div key={crop.cropsId} className={`box box-${index + 1}`}>
+          <div key={crop.cropsId} className={"box box-${index + 1}"}>
             <div className="crop-summary">
               <h3 className='crop-name'>{crop.cropsName}</h3>
               {index === 0 && (
