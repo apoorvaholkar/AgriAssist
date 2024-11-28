@@ -34,6 +34,9 @@
         "bankName": "Bank A",
         "loanAmount": "685546",
         "repaymentMonths": "9",
-        "loanStatus": "Approved"
+        "loanStatus": "Approved",
+        "sanctionedAmount": 50000,
+        "safeMargin": 60,
+        "warning":"Safe"
     }
 ]

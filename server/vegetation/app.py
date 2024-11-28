@@ -20,6 +20,49 @@ CORS(app)   # Enable CORS for all routes
 GLOBAL_DATA_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/global_data.json"
 FORM_DATA_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/form_data.json"
 LOAN_APPLICATION_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/loan_data.json"
+OUTPUT_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/output.json"
+credit_score = 0
+# Crop category lists
+cash_crops = [
+    "cotton", "jute", "tea", "coffee", "sugarcane", "tobacco", "black pepper", "turmeric", "cardamom",
+    "ginger", "rubber", "cocoa", "areca nut", "clove", "cashew nut", "vanilla", "betel leaves", "oil palm", "coriander"
+]
+
+horticulture_crops = [
+    "mango", "banana", "apple", "grapes", "pomegranate", "papaya", "guava", "litchi", "pineapple", "orange",
+    "watermelon", "lemon", "chikoo", "custard apple", "coconut", "jackfruit", "strawberry", "potato", "tomato",
+    "onion", "brinjal", "cauliflower", "cabbage", "carrot", "radish", "beans", "cucumber", "pumpkin", "spinach",
+    "ladyfinger", "green peas", "bitter gourd", "bottle gourd", "chilies", "roses", "marigolds", "tulips",
+    "jasmine", "hibiscus", "orchids", "sunflowers", "carnations", "chrysanthemums"
+]
+
+food_crops = [
+    "rice", "wheat", "maize", "barley", "jowar", "bajra", "ragi", "foxtail millet", "kodo millet", "chana", "arhar",
+    "tur", "urad", "moong", "masoor", "rajma", "cowpea", "moth bean", "horse gram", "groundnut", "mustard",
+    "soybean", "sunflower", "sesame", "castor", "linseed", "safflower", "niger seed", "coconut", "potato",
+    "sweet potato", "yam", "tapioca"
+]
+
+# Define soil type suitability
+red_soil_crops = [
+    "ragi", "foxtail millet", "kodo millet", "bajra", "jowar",
+    "urad", "tur", "horse gram", "groundnut", "castor",
+    "sweet potato", "yam", "mango", "pomegranate", "guava",
+    "jackfruit", "tomato", "carrot", "radish", "chilies",
+    "bottle gourd", "cotton", "tobacco", "coffee", "turmeric",
+    "areca nut", "vanilla", "ginger"
+]
+
+black_soil_crops = [
+    "rice", "wheat", "maize", "barley", "chana", "masoor",
+    "rajma", "cowpea", "soybean", "sesame", "sunflower",
+    "linseed", "mustard", "potato", "tapioca", "banana",
+    "orange", "coconut", "pineapple", "strawberry", "onion",
+    "cabbage", "cauliflower", "brinjal", "spinach", "beans",
+    "pumpkin", "green peas", "sugarcane", "jute", "tea",
+    "rubber", "clove", "black pepper", "cocoa", "betel leaves",
+    "oil palm"
+]
 
 
 # Configuration for Sentinel Hub
@@ -83,7 +126,9 @@ function evaluatePixel(samples) {
 }
 """
 
-# Local Credit Form Data
+
+
+
 @app.route('/local', methods=['POST'])
 @cross_origin()
 def save_form_data():
@@ -91,10 +136,60 @@ def save_form_data():
         # Get JSON data from the request
         form_data = req.get_json()
         
-        form_data['local_credit_score'] = random.randint(50, 100)
+        # Calculate the local credit score
+        credit_score = calculate_local_credit_score(form_data)
+    
+        with open(OUTPUT_FILE, 'r') as file:
+            output_data = json.load(file)
+        
+        # Extract the analysisReport and bsi_analysis from output_data
+        analysis_report = output_data.get("analysisReport", [])
+        bsi_analysis = output_data.get("processedData", {}).get("bsi_analysis", [])
+        
+        # Fetch the cycle detection status from the first entry of analysisReport
+        if analysis_report[0] == "true":
+            cycle = 1
+        else:
+            cycle = 0
+        
+        # Fetch the mean_ndvi and other details from analysisReport
+        mean_ndvi = int(analysis_report[1].get("mean_ndvi", 0))
+
+        # Calculate the average BSI score from the bsi_analysis list
+        bsi_values = [entry.get("mean_bsi", 0) for entry in bsi_analysis]
+        average_bsi = sum(bsi_values) / len(bsi_values) if bsi_values else 0
+        print("Average BSI:", average_bsi)
+        
+        # Calculate green_index based on mean_ndvi
+        mean_ndvi = 0
+        if mean_ndvi > 0.7:
+            green_index = 2
+        elif mean_ndvi >= 0.5:
+            green_index = 1.5
+        elif mean_ndvi >= 0.3:
+            green_index = 1
+        else:
+            green_index = 0.5
+
+        # Calculate land_type based on bsi_score
+        land_type = 0
+        if average_bsi > -0.343:
+            land_type = 0.25
+        elif -0.387 < average_bsi <= -0.365:
+            land_type = 0.5
+        elif average_bsi <= -0.387:
+            land_type = 1
+
+
+        form_data['local_credit_score'] = credit_score + green_index + land_type + cycle
+        print("Local Credit Score:", credit_score)
+        print("Green Index:", green_index)
+        print("Land Type:", land_type)
+        print("Cycle:", cycle)
         # Add a timestamp to the form data
         form_data['timestamp'] = datetime.now().isoformat()
 
+    
         # Check if the file exists
         DATA_FILE = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/form_data.json"
         if os.path.exists(DATA_FILE):
@@ -104,7 +199,7 @@ def save_form_data():
         else:
             # If the file does not exist, initialize an empty list
             existing_data = []
-
+        
         # Append the new form data
         existing_data.append(form_data)
 
@@ -112,13 +207,109 @@ def save_form_data():
         with open(DATA_FILE, 'w') as file:
             json.dump(existing_data, file, indent=4)
 
-        return jsonify({"message": "Form data saved successfully!"}), 200
+        return jsonify({"message": "Form data saved successfully!", "local_credit_score": credit_score}), 200
 
     except Exception as e:
         print("Error saving form data:", e)
-        return jsonify({"message": "Failed to save form data", "error": str(e)}), 500
+        return jsonify({"message": credit_score, "error": str(e)}), 500
 
 
+def calculate_local_credit_score(form_data):
+    """
+    Function to calculate local credit score based on form data.
+    """
+    
+     # Map ownershipType, landuse, soilType, and other categorical values to scores
+    land = form_data.get("landUse").lower()  # Normalize case
+    landuse_score = 0
+    if land == "agricultural":
+        landuse_score = 1
+    elif land == "non-agricultural":
+        landuse_score = 0.5
+    else:
+        landuse_score = 0
+
+    irrigattion = form_data.get("irrigation")
+    if irrigattion == "yes":
+        irrigation_scores = 1
+    else:
+        irrigation_scores = 0
+
+
+    # Determine crop rating
+    crop = form_data.get("cropTypes").lower() # Normalize case
+    crop_types_score = 0
+    if crop in cash_crops:
+        crop_types_score = 2  # Cash crop
+    elif crop in horticulture_crops:
+        crop_types_score = 1  # Horticulture crop
+    elif crop in food_crops:
+        crop_types_score = 0.5  # Food crop
+    else:
+        crop_types_score = 0.25 # Other crops
+
+    # Calculate individual scores
+    ownership = form_data.get("ownershipType")# Simplify for demonstration
+    if ownership == "owned":
+        ownership_score = 1.0
+    elif ownership == "leased":
+        ownership_score = 0.5
+    else:
+        ownership_score = 0.3
+    
+     # Avoid division by zero
+    if int(form_data.get("landArea")) <= 0:
+        return 0
+
+    # Calculate Yield Per Unit Area (YPUA)
+    ypua = int(form_data.get("averageYield")) / int(form_data.get("landArea"))
+
+    # Define thresholds (these can be tuned based on real-world data)
+    threshold_high = 3.0  # High yield (e.g., 3 tons per hectare)
+    threshold_low = 1.0   # Low yield (e.g., 1 ton per hectare)
+
+    # Assign score based on yield per unit area
+    if ypua >= threshold_high:
+        average_yield_score = 1.0  # High yield
+    elif ypua >= threshold_low:
+        average_yield_score = 0.5  # Moderate yield
+    else:
+        average_yield_score = 0.
+
+    crop_type = form_data.get("cropTypes")
+    soil_type = form_data.get("soilType")
+    
+    # Calculate soil type score
+    soil_type_score = calculate_soil_type_score(crop_type, soil_type)
+
+    # Example for brevity
+    total_score = ownership_score + crop_types_score + average_yield_score + soil_type_score + irrigation_scores + landuse_score
+    print("Ownership Score:", ownership_score)
+    print("Crop Types Score:", crop_types_score)
+    print("Average Yield Score:", average_yield_score)
+    print("Soil Type Score:", soil_type_score)
+    print("Irrigation Score:", irrigation_scores)
+    print("Land Use Score:", landuse_score)
+
+    return round(total_score, 2)
+
+
+# Function to calculate aoil score based on form data
+def calculate_soil_type_score(crop_type, soil_type):
+    """
+    Calculate soil type score based on the crop type and soil type.
+    """
+    # Normalize inputs to handle case sensitivity
+    crop_type = crop_type.lower()
+    soil_type = soil_type.lower()
+
+    # Check soil type and crop suitability
+    if soil_type == "red" and crop_type in red_soil_crops:
+        return 1  # Suitable
+    elif soil_type == "black" and crop_type in black_soil_crops:
+        return 1  # Suitable
+    else:
+        return 0.25  # Not suitable
 
 
 #Global Credit Form Data
@@ -128,7 +319,7 @@ def save_global_data():
     try:
         # Get JSON data from the request
         global_data = req.get_json()
-        global_data['global_credit_score'] = random.randint(50, 100)
+        global_data['global_credit_score'] = calculate_global_credit_score(global_data)
         # Add a timestamp to the global data
         global_data['timestamp'] = datetime.now().isoformat()
 
@@ -155,9 +346,59 @@ def save_global_data():
         print("Error saving global data:", e)
         return jsonify({"message": "Failed to save global data", "error": str(e)}), 500
 
+def calculate_global_credit_score(data):
+    """
+    Calculate global credit score based on provided parameters, including bank savings, crop insurance, and health insurance.
+    The score is bounded between 0 and 10.
+    :param data: Dictionary containing the input parameters.
+    :return: Global credit score.
+    """
+
+    print("Calculating global credit score...")
+    
+    num_vehicles = int(data.get("numVehicles", 0))
+    num_wells = int(data.get("numWells", 0))
+    num_borewells = int(data.get("numBorewells", 0))
+    canal_water = data.get("canalWater", "no").lower()
+    annual_income = int(data.get("annualIncome", 0))
+    other_income = int(data.get("otherIncome", 0))
+    outstanding_loan_amount = int(data.get("outstandingLoanAmount", 0))
+    bank_savings = float(data.get("bankSavings", 0))  # Convert to float if input is string
+    crop_insurance = data.get("cropInsurance", "no").lower()  # Boolean based on "yes" or "no"
+    health_insurance = data.get("healthInsurance", "no").lower()  # Boolean: True/False
+
+    # Scoring logic
+    vehicle_score = 0 if num_vehicles == 0 else min(num_vehicles * 0.45, 1.25)
+    well_score = min(num_wells * 0.45, 1.25)
+    borewell_score = min(num_borewells * 0.25, 1)
+    canal_water_score = 1 if canal_water == "yes" else 0
+    income_score = min((annual_income + other_income) / 100000, 2)  # Capped at 5
+    loan_score = 1 if outstanding_loan_amount == 0 else 0
+    savings_score = min(bank_savings / 100000, 0.75)  # Capped at 2
+    crop_insurance_score = 1 if crop_insurance else 0
+    health_insurance_score = 0.75 if health_insurance == "yes" else 0
+
+    # Combine scores with weights
+    global_credit_score = vehicle_score + well_score + borewell_score + canal_water_score + income_score + loan_score + savings_score + crop_insurance_score + health_insurance_score
+
+    # Ensure the score is between 0 and 10
+    global_credit_score = round(global_credit_score, 2)
+
+    print("Vehicle Score:", vehicle_score)
+    print("Well Score:", well_score)
+    print("Borewell Score:", borewell_score)
+    print("Canal Water Score:", canal_water_score)
+    print("Income Score:", income_score)
+    print("Loan Score:", loan_score)
+    print("Savings Score:", savings_score)
+    print("Crop Insurance Score:", crop_insurance_score)
+    print("Health Insurance Score:", health_insurance_score)
+    print("Global Credit Score:", global_credit_score)
+
+    return global_credit_score
 
 
-#Loan Application
+# Loan Application
 @app.route('/submit-loan', methods=['POST'])
 @cross_origin()
 def submit_loan_application():
@@ -194,21 +435,44 @@ def submit_loan_application():
         elif not form_entry:
             return jsonify({"message": "Aadhar number not found in form_data.json."}), 404
 
-         # Extract specific fields from form_data
+        # Extract specific fields from form_data
         bank_name = form_data.get('bankName')
         loan_amount = form_data.get('loanAmount')
         repayment_months = form_data.get('repaymentMonths')
+
+        # Determine sanction_loan based on global_credit_score
+        global_credit_score = global_entry.get('global_credit_score', 0)
+        if global_credit_score < 3:
+            sanction_loan = 30
+        elif 3 <= global_credit_score < 6:
+            sanction_loan = 70
+        elif 6 <= global_credit_score < 8:
+            sanction_loan = 90
+        else:
+            sanction_loan = 100
+
+        # Determine warning based on local_credit_score
+        local_credit_score = form_entry.get('local_credit_score', 0)
+        if local_credit_score < 3:
+            warning = "High Risk"
+        elif 3 <= local_credit_score < 6:
+            warning = "Moderate Risk"
+        else:
+            warning = "Safe"
 
         # Merge data from both entries and include selected form_data fields
         merged_data = {
             **global_entry,
             **form_entry,
-            "bankName": bank_name,          # Add bankName from form_data
-            "loanAmount": loan_amount,      # Add loanAmount from form_data
-            "repaymentMonths": repayment_months, # Add repaymentMonths from form_data
-            "loanStatus": "Pending"        # Add loan_status field
+            "bankName": bank_name,            # Add bankName from form_data
+            "loanAmount": loan_amount,        # Add loanAmount from form_data
+            "repaymentMonths": repayment_months,  # Add repaymentMonths from form_data
+            "loanStatus": "Pending",          # Add loan_status field
+            "sanction_loan": sanction_loan,   # Add sanction_loan field
+            "warning": warning                # Add warning field
         }
-
+        
+        LOAN_APPLICATION_FILE=r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/client/public/loan_data.json";
         # Save the merged data to the loan_application.json file
         if os.path.exists(LOAN_APPLICATION_FILE):
             with open(LOAN_APPLICATION_FILE, 'r') as file:
@@ -229,30 +493,67 @@ def submit_loan_application():
         return jsonify({"message": "An error occurred.", "error": str(e)}), 500
 
 
-# Get the latest loan applications
+# Get Loan Applications
 @app.route('/admin/loan-applications', methods=['GET'])
 def get_latest_loan_applications():
     try:
+        # Check if the loan application file exists
+
         if os.path.exists(LOAN_APPLICATION_FILE):
             with open(LOAN_APPLICATION_FILE, 'r') as file:
                 loan_data = json.load(file)
         else:
             loan_data = []
 
-        # Filter the latest entry for each Aadhar number
-        unique_entries = {}
-        for entry in loan_data:
-            aadhar = entry.get('aadharNumber')
-            if aadhar:
-                if aadhar not in unique_entries or unique_entries[aadhar]['timestamp'] < entry.get('timestamp', 0):
-                    unique_entries[aadhar] = entry
-
-        return jsonify({"message": "Loan applications retrieved successfully.", "data": list(unique_entries.values())}), 200
+        # Sort the entries by timestamp in descending order and get the latest 10 entries
+        latest_entries = sorted(loan_data, key=lambda x: x.get('timestamp', 0), reverse=True)[:10]
+        print("Latest loan applications:", latest_entries)
+        return jsonify({"message": "Latest loan applications retrieved successfully.", "data": latest_entries}), 200
 
     except Exception as e:
         print("Error retrieving loan applications:", e)
         return jsonify({"message": "An error occurred.", "error": str(e)}), 500
     
+
+
+@app.route('/admin/approve-loan', methods=['POST'])
+def update_approve_status():
+    try:
+        data = request.get_json()
+        aadhar_number = data.get('aadharNumber')
+        status = data.get('status')
+        review_message = data.get('reviewMessage', "")
+        sanctioned_amount = data.get('sanctionedAmount', None)
+
+        if not aadhar_number or not status:
+            return jsonify({"message": "Aadhar number and status are required."}), 400
+
+        if os.path.exists(LOAN_APPLICATION_FILE):
+            with open(LOAN_APPLICATION_FILE, 'r') as file:
+                loan_data = json.load(file)
+        else:
+            return jsonify({"message": "Loan application file not found."}), 404
+
+        # Update the loan application
+        for application in loan_data:
+            if application.get('aadharNumber') == aadhar_number:
+                application['loanStatus'] = status
+                if status == "Approved" and sanctioned_amount is not None:
+                    application['sanctionedAmount'] = sanctioned_amount
+                break
+        else:
+            return jsonify({"message": "Loan application not found."}), 404
+
+        # Write back the updated data to the file
+        with open(LOAN_APPLICATION_FILE, 'w') as file:
+            json.dump(loan_data, file, indent=4)
+
+        return jsonify({"message": f"Loan status updated to {status} successfully."}), 200
+
+    except Exception as e:
+        print("Error updating loan status:", e)
+        return jsonify({"message": "An error occurred.", "error": str(e)}), 500
+   
 
 @app.route('/admin/update-loan-status', methods=['POST'])
 def update_loan_status():
@@ -288,6 +589,53 @@ def update_loan_status():
     except Exception as e:
         print("Error updating loan status:", e)
         return jsonify({"message": "An error occurred.", "error": str(e)}), 500
+    
+@app.route('/admin/search-application/<aadhar_number>', methods=['GET'])
+def search_application(aadhar_number):
+    try:
+        # Check if the loan application file exists
+        if not os.path.exists(LOAN_APPLICATION_FILE):
+            return jsonify({"message": "Loan application file not found."}), 404
+
+        # Load loan application data
+        with open(LOAN_APPLICATION_FILE, 'r') as file:
+            loan_data = json.load(file)
+
+        # Filter loan applications for the given Aadhar number
+        matching_applications = [
+            application for application in loan_data
+            if application.get('aadharNumber') == aadhar_number
+        ]
+
+        if not matching_applications:
+            return jsonify({"message": "No loan applications found for this Aadhar number."}), 404
+
+        # Return matching applications
+        return jsonify({"message": "Loan applications retrieved successfully.", "data": matching_applications}), 200
+
+    except Exception as e:
+        print(f"Error while fetching applications for Aadhar {aadhar_number}: {e}")
+        return jsonify({"message": "An error occurred while fetching loan applications.", "error": str(e)}), 500
+    
+@app.route('/admin/view-application/<aadhar_number>', methods=['GET'])
+@cross_origin()
+def view_application(aadhar_number):
+    try:
+        if os.path.exists(LOAN_APPLICATION_FILE):
+            with open(LOAN_APPLICATION_FILE, 'r') as file:
+                loan_data = json.load(file)
+        else:
+            return jsonify({"message": "Loan application file not found."}), 404
+
+        application = next((entry for entry in loan_data if entry.get('aadharNumber') == aadhar_number), None)
+        if application:
+            return jsonify({"data": application}), 200
+        else:
+            return jsonify({"message": "Application not found."}), 404
+    except Exception as e:
+        return jsonify({"message": str(e)}), 500
+
+
 
 
 
@@ -604,16 +952,22 @@ def get_712():
         'data': response
     })
 
-# Path to your image file
-ndvi_image_path = r".C:\Users\Apoorva\Documents\VIT\Major Project\Bhoomi\Bhoomi-main\server\vegetation\static\ndvi_plot.png"
+# Assuming your image is in the static folder
+ndvi_image_path = r"C:/Users/Apoorva/Documents/VIT/Major Project/Bhoomi/Bhoomi-main/server/vegetation/static/ndvi_plot.png"
 
 @app.route('/ndvi-image')
 def get_ndvi_image():
     try:
+        if not os.path.exists(ndvi_image_path):
+            print(f"Image not found at path: {ndvi_image_path}")  # Debug print
+            return jsonify({'error': 'Image not found'}), 404
+            
+        print(f"Sending file from path: {ndvi_image_path}")  # Debug print
         return send_file(ndvi_image_path, mimetype='image/png')
     except Exception as e:
         print(f"Error fetching image: {e}")  # Log the error for debugging
-        return jsonify({'error': 'Image not found'}), 404
+        return jsonify({'error': str(e)}), 500
+
 
 
 
@@ -634,24 +988,6 @@ def get_analysis_report():
         return jsonify({"analysisReport": analysis_report}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/admin/view-application/<aadhar_number>', methods=['GET'])
-@cross_origin()
-def view_application(aadhar_number):
-    try:
-        if os.path.exists(LOAN_APPLICATION_FILE):
-            with open(LOAN_APPLICATION_FILE, 'r') as file:
-                loan_data = json.load(file)
-        else:
-            return jsonify({"message": "Loan application file not found."}), 404
-
-        application = next((entry for entry in loan_data if entry.get('aadharNumber') == aadhar_number), None)
-        if application:
-            return jsonify({"data": application}), 200
-        else:
-            return jsonify({"message": "Application not found."}), 404
-    except Exception as e:
-        return jsonify({"message": str(e)}), 500
 
 
 

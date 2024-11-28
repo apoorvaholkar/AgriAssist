@@ -322,7 +322,7 @@ const GlobalCreditForm = ({ onBack }) => {
         </form>
       </div>
       {/* Submit Button */}
-      <button type="submit" className="btn">
+      <button onClick={handleSubmit} type="submit" className="btn">
         Submit
       </button>
       <button onClick={onBack} className="btn back-btn">

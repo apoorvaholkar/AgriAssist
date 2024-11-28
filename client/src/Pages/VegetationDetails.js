@@ -2,32 +2,55 @@ import React, { useState, useEffect } from "react";
 import "./VegetationDetails.css";
 
 const VegetationDetails = () => {
-  const [graphUrl, setGraphUrl] = useState(null);
+  const [imageBlob, setImageBlob] = useState(null);
   const [analysisReport, setAnalysisReport] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Fetch vegetation graph data from the backend
   useEffect(() => {
     const fetchVegetationGraph = async () => {
       try {
-        const response = await fetch("http://localhost:5000/getveg", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        setLoading(true);
+        setError(null);
+        
+        console.log("Fetching NDVI image..."); // Debug log
+        
+        const response = await fetch("http://localhost:5000/ndvi-image");
+        console.log("Response status:", response.status); // Debug log
 
         if (!response.ok) {
-          throw new Error("Failed to fetch vegetation graph.");
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to fetch vegetation graph.");
         }
 
-        const data = await response.json();
-        setGraphUrl(data.graph_url);
+        const contentType = response.headers.get("content-type");
+        console.log("Content type:", contentType); // Debug log
+
+        if (!contentType || !contentType.includes("image/")) {
+          throw new Error("Invalid content type received from server");
+        }
+
+        const blob = await response.blob();
+        console.log("Blob size:", blob.size); // Debug log
+        
+        const imageUrl = URL.createObjectURL(blob);
+        setImageBlob(imageUrl);
+        setLoading(false);
       } catch (err) {
         console.error("Error fetching vegetation graph:", err);
-        setError("Unable to load vegetation graph. Please try again later.");
+        setError(err.message || "Unable to load vegetation graph. Please try again later.");
+        setLoading(false);
       }
     };
 
     fetchVegetationGraph();
+
+    return () => {
+      if (imageBlob) {
+        URL.revokeObjectURL(imageBlob);
+      }
+    };
   }, []);
 
   // Fetch analysis report from the public folder
@@ -51,25 +74,52 @@ const VegetationDetails = () => {
     fetchAnalysisReport();
   }, []);
 
+  const renderImage = () => {
+    if (loading) {
+      return (
+        <div className="text-center mt-8 text-gray-600">
+          <div className="animate-pulse">Loading Vegetation Graph...</div>
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="text-center mt-8">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <p className="font-bold">Error</p>
+            <p>{error}</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (imageBlob) {
+      return (
+        <div className="text-center mt-8">
+          <h3 className="text-lg font-semibold mb-4">Vegetation Graph:</h3>
+          <img
+            src={imageBlob}
+            alt="Vegetation Graph"
+            className="border rounded-md shadow-md mx-auto w-4/5 md:w-3/5"
+            onError={(e) => {
+              console.error("Image failed to load");
+              setError("Failed to display the image");
+            }}
+          />
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="vegetation-details">
       <h1 className="text-2xl font-semibold text-center my-4">Vegetation Details</h1>
 
       {/* NDVI Graph Section */}
-      {graphUrl ? (
-        <div className="text-center mt-8">
-          <h3 className="text-lg font-semibold mb-4">Vegetation Graph:</h3>
-          <img
-            src={`http://localhost:5000${graphUrl}`}
-            alt="Vegetation Graph"
-            className="border rounded-md shadow-md mx-auto w-4/5 md:w-3/5"
-          />
-        </div>
-      ) : error ? (
-        <div className="text-center text-red-500 mt-8">{error}</div>
-      ) : (
-        <div className="text-center mt-8 text-gray-600">Loading Vegetation Graph...</div>
-      )}
+      {renderImage()}
 
       {/* Analysis Report Section */}
       {analysisReport ? (

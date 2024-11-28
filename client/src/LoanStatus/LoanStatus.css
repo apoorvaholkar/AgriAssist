@@ -23,12 +23,30 @@ h1{
   transform: scale(1);
 }
 
+
+
 .gradient-button:hover {
   background: linear-gradient(90deg, var(--primary-color) 20%, #1b5e20 80%);
   color: var(--secondary-color);
   transform: translateY(-2px) scale(1.03); /* Slight movement and zoom */
 }
 
+.search-button{
+  background: black;
+  color: var(--secondary-color);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  transform: scale(1);
+}
+
+.search-button:hover {
+  background: linear-gradient(90deg, black 20%, #1b5e20 80%);
+  color: var(--secondary-color);
+  transform: translateY(-2px) scale(1.03); /* Slight movement and zoom */
+}
 /* Card Styles */
 .bank-card {
   margin-top: 20px;

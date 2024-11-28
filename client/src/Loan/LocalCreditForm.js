@@ -196,7 +196,7 @@ const LocalCreditForm = ({ onBack }) => {
               type="text"
               name="soilType"
               className="crop-input"
-              placeholder="Enter soil type (e.g., Sandy, Loamy)"
+              placeholder="Enter soil type (e.g., Red, Black)"
               value={formData.soilType}
               onChange={handleInputChange}
               required
@@ -218,13 +218,13 @@ const LocalCreditForm = ({ onBack }) => {
           </div>
 
           <div className="input-container">
-            <label htmlFor="crop-types">Crop Types Grown:</label>
+            <label htmlFor="crop-types">Crop Name Grown:</label>
             <input
               id="crop-types"
               type="text"
               name="cropTypes"
               className="crop-input"
-              placeholder="Enter crop types"
+              placeholder="Enter crop name"
               value={formData.cropTypes}
               onChange={handleInputChange}
               required
@@ -232,7 +232,7 @@ const LocalCreditForm = ({ onBack }) => {
           </div>
 
           <div className="input-container">
-            <label htmlFor="average-yield">Average Yield per Acre for Past 3 Seasons:</label>
+            <label htmlFor="average-yield">Total Yield:</label>
             <input
               id="average-yield"
               type="text"
@@ -245,7 +245,7 @@ const LocalCreditForm = ({ onBack }) => {
             />
           </div>
 
-          <button className="btn" type="submit">
+          <button className="btn" type="submit" onClick={handleSubmit}>
             Submit
           </button>
           <button className="btn back-btn" onClick={onBack}>

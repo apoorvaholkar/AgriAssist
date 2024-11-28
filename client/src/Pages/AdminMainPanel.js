@@ -10,6 +10,8 @@ const AdminMainPanel = () => {
   const [showRevertPopup, setShowRevertPopup] = useState(false);
   const [selectedAadhar, setSelectedAadhar] = useState(null);
   const [reviewMessage, setReviewMessage] = useState("");
+  const [showApprovePopup, setShowApprovePopup] = useState(false);
+  const [sanctionedAmount, setSanctionedAmount] = useState("");
 
   useEffect(() => {
     const fetchLoanApplications = async () => {
@@ -89,6 +91,51 @@ const AdminMainPanel = () => {
     setViewApplication(null);
   };
 
+  const handleApproveClick = (aadharNumber) => {
+    setSelectedAadhar(aadharNumber);
+    setShowApprovePopup(true);
+  };
+  
+  const handleSanctionedSubmit = async () => {
+    if (!sanctionedAmount || isNaN(sanctionedAmount) || sanctionedAmount <= 0) {
+      alert("Please enter a valid sanctioned amount.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/admin/approve-loan",
+        {
+          aadharNumber: selectedAadhar,
+          status: "Approved",
+          sanctionedAmount: parseFloat(sanctionedAmount),
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Loan approved successfully!");
+        const updatedApplications = loanApplications.map((application) =>
+          application.aadharNumber === selectedAadhar
+            ? { ...application, loanStatus: "Approved", sanctionedAmount }
+            : application
+        );
+        setLoanApplications(updatedApplications);
+        setShowApprovePopup(false);
+        setSanctionedAmount("");
+      } else {
+        alert("Failed to approve the loan.");
+      }
+    } catch (err) {
+      console.error("Error approving the loan:", err);
+      alert("An error occurred while approving the loan.");
+    }
+  };
+
+  const closeApprovePopup = () => {
+    setShowApprovePopup(false);
+    setSanctionedAmount("");
+  };
+
   return (
       <div className="admin-panel-container">
         <h2 className="admin-panel-title">Admin Panel - Loan Applications</h2>
@@ -104,8 +151,11 @@ const AdminMainPanel = () => {
                   <th>Loan Amount</th>
                   <th>Repayment Months</th>
                   <th>Timestamp</th>
+                  <th>Warning</th>
+                  <th>Safe margin</th>
                   <th>Loan Status</th>
                   <th>Actions</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -117,6 +167,8 @@ const AdminMainPanel = () => {
                     <td>{application.loanAmount}</td>
                     <td>{application.repaymentMonths}</td>
                     <td>{new Date(application.timestamp).toLocaleString()}</td>
+                    <td>{application.warning}</td>
+                    <td>{application.safeMargin}</td>
                     <td
                       className={
                         application.loanStatus === "Approved"
@@ -129,12 +181,12 @@ const AdminMainPanel = () => {
                       {application.loanStatus}
                     </td>
                     <td className="action-buttons">
-                      <button
-                        className="button button-approve"
-                        onClick={() => handleStatusUpdate(application.aadharNumber, "Approved")}
-                      >
-                        Approve
-                      </button>
+                    <button
+                      className="button button-approve"
+                      onClick={() => handleApproveClick(application.aadharNumber)}
+                    >
+                      Approve
+                    </button>
                       <button
                         className="button button-reject"
                         onClick={() => handleStatusUpdate(application.aadharNumber, "Rejected")}
@@ -162,7 +214,7 @@ const AdminMainPanel = () => {
             </table>
           </div>
         ) : (
-          <p className="no-data">No loan applications found.</p>
+          <p className="no-data">No loan applications found</p>
         )}
     
         {/* Revert Popup */}
@@ -221,7 +273,33 @@ const AdminMainPanel = () => {
           </div>
         )}
 
-
+      
+      {/* Approve Popup */}
+      {showApprovePopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="popup-content">
+            <h3>Sanction Loan Amount</h3>
+            <input
+              type="number"
+              className="input-field"
+              placeholder="Enter sanctioned amount"
+              value={sanctionedAmount}
+              onChange={(e) => setSanctionedAmount(e.target.value)}
+            />
+            <div className="flex justify-end mt-4">
+              <button
+                className="button button-approve"
+                onClick={handleSanctionedSubmit}
+              >
+                Submit
+              </button>
+              <button className="button" onClick={closeApprovePopup}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     
   );
